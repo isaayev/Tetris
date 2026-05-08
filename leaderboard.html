@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard — Tetris</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="auth-body">
+    <main class="auth-shell wide">
+      <section class="auth-card leaderboard-card">
+        <header class="auth-header">
+          <h1>Leaderboard</h1>
+          <p>Best scores from registered players, highest first.</p>
+        </header>
+
+        <p class="form-error hidden" id="load-error" role="alert"></p>
+
+        <div class="table-wrap">
+          <table class="leaderboard-table" aria-label="Leaderboard">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Player</th>
+                <th scope="col">Best score</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+              <tr>
+                <td colspan="3" class="muted-cell">Loading…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="auth-footer">
+          <a href="index.html">Back to game</a>
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const bodyEl = document.getElementById("leaderboard-body");
+      const errorEl = document.getElementById("load-error");
+
+      async function load() {
+        errorEl.classList.add("hidden");
+        try {
+          const res = await fetch("/api/leaderboard");
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to load");
+          const rows = data.leaderboard || [];
+          if (rows.length === 0) {
+            bodyEl.innerHTML = '<tr><td colspan="3" class="muted-cell">No scores yet. Be the first to register and play!</td></tr>';
+            return;
+          }
+          bodyEl.innerHTML = rows
+            .map(
+              (row, i) =>
+                `<tr><td>${i + 1}</td><td>${escapeHtml(row.username)}</td><td>${row.bestScore}</td></tr>`,
+            )
+            .join("");
+        } catch (e) {
+          errorEl.textContent = e.message || "Could not load leaderboard.";
+          errorEl.classList.remove("hidden");
+          bodyEl.innerHTML = '<tr><td colspan="3" class="muted-cell">—</td></tr>';
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      load();
+    </script>
+  </body>
+</html>

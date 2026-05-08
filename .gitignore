@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets (use .env.example as template)
+.env
+.env.local
+.env.*.local
+
+# Logs & debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Prisma / SQLite local database
+prisma/dev.db
+prisma/dev.db-journal
+prisma/dev.db-wal
+prisma/dev.db-shm
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE (optional — remove lines if you want to share team settings)
+.idea/
+*.swp
+*.swo
+*~
+
+# Test / coverage (if you add later)
+coverage/
+.nyc_output/
+
+# Build output (if you add later)
+dist/
+build/

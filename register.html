@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register — Tetris</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="auth-body">
+    <main class="auth-shell">
+      <section class="auth-card">
+        <header class="auth-header">
+          <h1>Create account</h1>
+          <p>Save your best scores on the leaderboard.</p>
+        </header>
+
+        <form id="register-form" class="auth-form">
+          <label class="field">
+            <span>Email</span>
+            <input id="email-field" name="email" type="email" autocomplete="email" required />
+          </label>
+          <label class="field">
+            <span>Username</span>
+            <input id="username-field" name="username" type="text" autocomplete="username" required minlength="2" maxlength="32" />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <span class="password-input-row">
+              <input
+                id="password-field"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="6"
+              />
+              <button type="button" class="toggle-reveal" id="password-toggle"></button>
+            </span>
+          </label>
+          <p class="form-error hidden" id="form-error" role="alert"></p>
+          <button type="submit" class="auth-submit">Register</button>
+        </form>
+
+        <p class="auth-footer">
+          Already have an account?
+          <a href="login.html">Log in</a>
+          ·
+          <a href="index.html">Back to game</a>
+        </p>
+      </section>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+      attachPasswordToggle(
+        document.getElementById("password-field"),
+        document.getElementById("password-toggle"),
+      );
+
+      const form = document.getElementById("register-form");
+      const errorEl = document.getElementById("form-error");
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.toggle("hidden", !msg);
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        showError("");
+        const email = document.getElementById("email-field").value.trim();
+        const username = document.getElementById("username-field").value.trim();
+        const password = document.getElementById("password-field").value;
+
+        try {
+          const res = await fetch("/api/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, username, password }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            showError(data.error || "Registration failed");
+            return;
+          }
+          setAuthSession(data.token, data.user);
+          window.location.href = "index.html";
+        } catch {
+          showError("Network error. Is the server running?");
+        }
+      });
+    </script>
+  </body>
+</html>

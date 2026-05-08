@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tetris Frontend</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="game-card">
+        <header class="game-header">
+          <h1>Tetris</h1>
+          <p>Frontend Demo</p>
+        </header>
+
+        <div class="game-layout">
+          <div class="board-wrap">
+            <canvas id="tetris-board" width="300" height="600" aria-label="Tetris board"></canvas>
+
+            <div class="overlay active" id="start-overlay">
+              <h2>Ready?</h2>
+              <p>Press Start to begin the game.</p>
+              <div class="overlay-actions start-overlay-actions">
+                <button type="button" id="start-btn">Start Game</button>
+                <a class="overlay-secondary-link" href="leaderboard.html">Leaderboard</a>
+              </div>
+            </div>
+
+            <div class="overlay hidden" id="pause-overlay">
+              <h2>Paused</h2>
+              <p>Game is paused. Choose an action.</p>
+              <div class="overlay-actions">
+                <button id="continue-btn">Continue</button>
+                <button id="pause-restart-btn" class="secondary">Restart Game</button>
+              </div>
+            </div>
+
+            <div class="overlay hidden" id="lost-overlay">
+              <h2>You Lost</h2>
+              <p id="lost-message"></p>
+              <button id="restart-btn">Restart Game</button>
+            </div>
+          </div>
+
+          <aside class="side-panel">
+            <div class="user-strip" id="user-strip">
+              <span id="guest-auth-links"
+                >Not saving scores? <a href="login.html">Log in</a> or
+                <a href="register.html">Register</a></span>
+              <span id="user-auth-info" class="hidden"
+                >Hi, <strong id="sidebar-username"></strong> ·
+                <button type="button" class="linklike" id="logout-btn">Log out</button></span>
+            </div>
+            <div class="stat-box">
+              <span>Score</span>
+              <strong id="score-value">0</strong>
+            </div>
+            <div class="stat-box">
+              <span>High Score</span>
+              <strong id="high-score-value">0</strong>
+            </div>
+            <div class="stat-box">
+              <span>Lines</span>
+              <strong id="line-value">0</strong>
+            </div>
+
+            <section class="controls">
+              <h3>Controls</h3>
+              <ul>
+                <li><kbd>&uarr;</kbd> Rotate</li>
+                <li><kbd>&larr;</kbd> Move Left</li>
+                <li><kbd>&rarr;</kbd> Move Right</li>
+                <li><kbd>&darr;</kbd> Soft Drop</li>
+                <li><kbd>Space</kbd> Hard drop</li>
+                <li class="controls-dual">
+                  <div class="controls-dual-item"><kbd>P</kbd> Pause</div>
+                  <div class="controls-dual-item"><kbd>Esc</kbd> Pause Menu</div>
+                </li>
+              </ul>
+            </section>
+
+            <div class="hint" id="action-hint">Press Start to begin.</div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="my_tetris.js"></script>
+  </body>
+</html>
