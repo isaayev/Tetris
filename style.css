@@ -138,7 +138,8 @@ body {
   border: 1px solid #4a5a99;
 }
 
-.start-overlay-actions {
+.start-overlay-actions,
+.menu-overlay-actions {
   justify-items: center;
 }
 

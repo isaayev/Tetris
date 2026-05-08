@@ -4,14 +4,14 @@ const lineValue = document.getElementById("line-value");
 const actionHint = document.getElementById("action-hint");
 
 const startOverlay = document.getElementById("start-overlay");
-const pauseOverlay = document.getElementById("pause-overlay");
+const menuOverlay = document.getElementById("menu-overlay");
 const lostOverlay = document.getElementById("lost-overlay");
 const lostMessage = document.getElementById("lost-message");
 
 const startBtn = document.getElementById("start-btn");
 const restartBtn = document.getElementById("restart-btn");
-const continueBtn = document.getElementById("continue-btn");
-const pauseRestartBtn = document.getElementById("pause-restart-btn");
+const menuResumeBtn = document.getElementById("menu-resume-btn");
+const menuStartBtn = document.getElementById("menu-start-btn");
 const guestAuthLinks = document.getElementById("guest-auth-links");
 const userAuthInfo = document.getElementById("user-auth-info");
 const sidebarUsername = document.getElementById("sidebar-username");
@@ -144,7 +144,7 @@ function setHint(text, type = "") {
 
 function showStartScreen() {
   startOverlay.classList.remove("hidden");
-  pauseOverlay.classList.add("hidden");
+  menuOverlay.classList.add("hidden");
   lostOverlay.classList.add("hidden");
 }
 
@@ -335,7 +335,7 @@ function startGame() {
   state.dropCounter = 0;
 
   startOverlay.classList.add("hidden");
-  pauseOverlay.classList.add("hidden");
+  menuOverlay.classList.add("hidden");
   lostOverlay.classList.add("hidden");
 
   spawnPiece();
@@ -351,7 +351,7 @@ async function endGame() {
 
   state.lost = true;
   state.started = false;
-  pauseOverlay.classList.add("hidden");
+  menuOverlay.classList.add("hidden");
   lostOverlay.classList.remove("hidden");
 
   const token = getAuthToken();
@@ -401,11 +401,27 @@ async function endGame() {
   syncStats();
 }
 
-function togglePause() {
+function openMainMenu() {
   if (!state.started || state.lost) return;
-  state.paused = !state.paused;
-  pauseOverlay.classList.toggle("hidden", !state.paused);
-  setHint(state.paused ? "Game paused." : "Game resumed.", state.paused ? "warn" : "ok");
+  state.paused = true;
+  menuOverlay.classList.remove("hidden");
+  setHint("Main menu — game paused.", "warn");
+}
+
+function closeMainMenu() {
+  if (!state.paused) return;
+  state.paused = false;
+  menuOverlay.classList.add("hidden");
+  setHint("Game resumed.", "ok");
+}
+
+function toggleMainMenu() {
+  if (!state.started || state.lost) return;
+  if (state.paused) {
+    closeMainMenu();
+  } else {
+    openMainMenu();
+  }
 }
 
 function update(time = 0) {
@@ -435,18 +451,14 @@ function registerKeyboard() {
     if (key === "Escape") {
       event.preventDefault();
       if (state.started && !state.lost) {
-        if (!state.paused) {
-          state.paused = true;
-          pauseOverlay.classList.remove("hidden");
-          setHint("Game paused.", "warn");
-        }
+        toggleMainMenu();
       }
       return;
     }
 
     if (key === "p" || key === "P") {
       event.preventDefault();
-      togglePause();
+      toggleMainMenu();
       return;
     }
 
@@ -484,11 +496,11 @@ function registerKeyboard() {
 
 startBtn.addEventListener("click", startGame);
 restartBtn.addEventListener("click", startGame);
-continueBtn.addEventListener("click", () => {
+menuResumeBtn.addEventListener("click", () => {
   if (!state.started || state.lost || !state.paused) return;
-  togglePause();
+  closeMainMenu();
 });
-pauseRestartBtn.addEventListener("click", startGame);
+menuStartBtn.addEventListener("click", startGame);
 logoutBtn.addEventListener("click", () => {
   clearAuthSession();
   clearRememberedCredentials();
