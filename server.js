@@ -163,6 +163,6 @@ app.get("/api/leaderboard", async (_req, res) => {
 
 app.use(express.static(path.join(__dirname)));
 
-app.listen(PORT, () => {
-  console.log(`Server http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server ${PORT} portunda aktivdir`);
 });
