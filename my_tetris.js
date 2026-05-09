@@ -16,6 +16,7 @@ const lostMainMenuBtn = document.getElementById("lost-main-menu-btn");
 const guestAuthLinks = document.getElementById("guest-auth-links");
 const userAuthInfo = document.getElementById("user-auth-info");
 const sidebarUsername = document.getElementById("sidebar-username");
+const adminPanelLink = document.getElementById("admin-panel-link");
 const logoutBtn = document.getElementById("logout-btn");
 const boardCanvas = document.getElementById("tetris-board");
 const ctx = boardCanvas.getContext("2d");
@@ -93,8 +94,8 @@ function resizeCanvas() {
   const viewportWidth = window.innerWidth;
   const isMobileWidth = viewportWidth <= 860;
   const isShortDesktop = !isMobileWidth && viewportHeight <= 900;
-  const boardHeightRatio = isMobileWidth ? 0.56 : isShortDesktop ? 0.5 : 0.64;
-  const widthDivisor = isMobileWidth ? 14 : isShortDesktop ? 18 : 15;
+  const boardHeightRatio = isMobileWidth ? 0.56 : isShortDesktop ? 0.54 : 0.74;
+  const widthDivisor = isMobileWidth ? 14 : isShortDesktop ? 16 : 12;
   const minBlock = isMobileWidth ? 16 : 14;
   const availableHeight = Math.max(260, Math.floor(viewportHeight * boardHeightRatio));
   const dynamicBlock = Math.max(minBlock, Math.floor(Math.min(availableHeight / ROWS, viewportWidth / widthDivisor)));
@@ -136,6 +137,7 @@ function syncStats() {
 function setAuthVisible(loggedIn) {
   guestAuthLinks.classList.toggle("hidden", loggedIn);
   userAuthInfo.classList.toggle("hidden", !loggedIn);
+  if (!loggedIn && adminPanelLink) adminPanelLink.classList.add("hidden");
 }
 
 async function refreshAuthHighScore(attempt = 0) {
@@ -154,6 +156,7 @@ async function refreshAuthHighScore(attempt = 0) {
   setAuthVisible(true);
   const cached = getAuthUser();
   sidebarUsername.textContent = cached?.username || "Player";
+  if (adminPanelLink) adminPanelLink.classList.toggle("hidden", !cached?.isAdmin);
 
   try {
     const res = await fetch("/api/me", {
@@ -175,6 +178,7 @@ async function refreshAuthHighScore(attempt = 0) {
       setAuthSession(token, data.user);
       state.highScore = data.user.bestScore;
       sidebarUsername.textContent = data.user.username;
+      if (adminPanelLink) adminPanelLink.classList.toggle("hidden", !data.user.isAdmin);
     }
   } catch {
     state.highScore = cached?.bestScore ?? 0;

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel — Tetris</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="auth-body">
+    <main class="auth-shell wide admin-shell">
+      <section class="auth-card admin-card">
+        <header class="auth-header">
+          <h1>Admin Panel</h1>
+          <p>Manage users: grant admin, edit, block or delete.</p>
+        </header>
+
+        <section class="admin-actions">
+          <label class="field">
+            <span>Grant admin by username/email</span>
+            <div class="admin-grant-row">
+              <input id="grant-login" type="text" placeholder="username or email" />
+              <button id="grant-btn" type="button" class="auth-submit">Grant Admin</button>
+            </div>
+          </label>
+        </section>
+
+        <p class="form-error hidden" id="admin-error" role="alert"></p>
+        <p class="admin-ok hidden" id="admin-ok" role="status"></p>
+
+        <div class="table-wrap admin-table-wrap">
+          <table class="leaderboard-table admin-table" aria-label="Users table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Best Score</th>
+                <th>Admin</th>
+                <th>Blocked</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-body">
+              <tr>
+                <td colspan="7" class="muted-cell">Loading users...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="auth-footer">
+          <a href="index.html">Back to game</a>
+        </p>
+      </section>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

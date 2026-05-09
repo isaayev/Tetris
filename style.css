@@ -33,7 +33,7 @@ body {
 }
 
 .app {
-  width: min(980px, 100%);
+  width: min(1180px, 100%);
   height: calc(100dvh - 16px);
 }
 
@@ -61,7 +61,7 @@ body {
 
 .game-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 280px);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 260px);
   gap: 12px;
   min-height: 0;
   align-items: stretch;
@@ -261,6 +261,10 @@ body.auth-body {
   width: min(720px, 100%);
 }
 
+.admin-shell {
+  width: min(1080px, 100%);
+}
+
 .auth-card {
   background: linear-gradient(145deg, #1d2340, #151a2f);
   border: 1px solid var(--border);
@@ -270,6 +274,10 @@ body.auth-body {
 }
 
 .leaderboard-card {
+  padding-bottom: 16px;
+}
+
+.admin-card {
   padding-bottom: 16px;
 }
 
@@ -386,6 +394,57 @@ body.auth-body {
   border-radius: 12px;
   border: 1px solid var(--border);
   max-height: min(60dvh, 420px);
+}
+
+.admin-table-wrap {
+  max-height: min(62dvh, 520px);
+}
+
+.admin-grant-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.admin-grant-row .auth-submit {
+  margin-top: 0;
+  white-space: nowrap;
+}
+
+.admin-ok {
+  margin: 0;
+  color: var(--ok);
+  font-size: 14px;
+}
+
+.admin-actions-cell {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  min-width: 200px;
+}
+
+.admin-btn {
+  border: 1px solid #4a5a99;
+  border-radius: 8px;
+  background: #2a335c;
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.admin-btn.warn {
+  border-color: #91586e;
+}
+
+.admin-btn.ok {
+  border-color: #2f9b63;
+}
+
+.admin-btn.danger {
+  border-color: #c4576e;
+  color: #ffd5de;
 }
 
 .leaderboard-table {
