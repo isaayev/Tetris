@@ -33,7 +33,7 @@ body {
 }
 
 .app {
-  width: min(1180px, 100%);
+  width: min(1320px, 100%);
   height: calc(100dvh - 16px);
 }
 
@@ -61,7 +61,7 @@ body {
 
 .game-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 260px);
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 240px);
   gap: 12px;
   min-height: 0;
   align-items: stretch;

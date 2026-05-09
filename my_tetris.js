@@ -94,8 +94,8 @@ function resizeCanvas() {
   const viewportWidth = window.innerWidth;
   const isMobileWidth = viewportWidth <= 860;
   const isShortDesktop = !isMobileWidth && viewportHeight <= 900;
-  const boardHeightRatio = isMobileWidth ? 0.56 : isShortDesktop ? 0.54 : 0.74;
-  const widthDivisor = isMobileWidth ? 14 : isShortDesktop ? 16 : 12;
+  const boardHeightRatio = isMobileWidth ? 0.56 : isShortDesktop ? 0.6 : 0.82;
+  const widthDivisor = isMobileWidth ? 14 : isShortDesktop ? 14 : 10;
   const minBlock = isMobileWidth ? 16 : 14;
   const availableHeight = Math.max(260, Math.floor(viewportHeight * boardHeightRatio));
   const dynamicBlock = Math.max(minBlock, Math.floor(Math.min(availableHeight / ROWS, viewportWidth / widthDivisor)));
