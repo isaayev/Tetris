@@ -12,11 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
-# Prisma / SQLite local database
-prisma/dev.db
-prisma/dev.db-journal
-prisma/dev.db-wal
-prisma/dev.db-shm
+# Local SQL schema dumps (optional)
+database/*.dump
 
 # OS
 .DS_Store

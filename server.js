@@ -2,10 +2,12 @@ const path = require("path");
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
+const { Pool } = require("pg");
 require("dotenv").config();
 
-const prisma = new PrismaClient();
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 const app = express();
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
@@ -39,6 +41,16 @@ function normalizeUsername(value) {
   return String(value || "").trim();
 }
 
+function isUniqueViolation(error) {
+  return error && error.code === "23505";
+}
+
+function uniqueFieldFromDetail(detail) {
+  if (!detail) return "field";
+  const match = detail.match(/\(([^)]+)\)=/);
+  return match ? match[1] : "field";
+}
+
 app.post("/api/register", async (req, res) => {
   try {
     const email = normalizeEmail(req.body.email);
@@ -58,16 +70,26 @@ app.post("/api/register", async (req, res) => {
     const usernameKey = username.toLowerCase();
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
-      data: { email, username, usernameKey, passwordHash },
-      select: { id: true, email: true, username: true, bestScore: true },
-    });
+    const insertResult = await pool.query(
+      `INSERT INTO users (email, username, username_key, password_hash)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, email, username, best_score`,
+      [email, username, usernameKey, passwordHash],
+    );
+
+    const row = insertResult.rows[0];
+    const user = {
+      id: row.id,
+      email: row.email,
+      username: row.username,
+      bestScore: row.best_score,
+    };
 
     const token = signToken(user.id);
     return res.status(201).json({ token, user });
   } catch (e) {
-    if (e.code === "P2002") {
-      const field = Array.isArray(e.meta?.target) ? e.meta.target.join(", ") : "field";
+    if (isUniqueViolation(e)) {
+      const field = uniqueFieldFromDetail(e.detail);
       return res.status(409).json({ error: `Already taken: ${field}` });
     }
     console.error(e);
@@ -84,14 +106,16 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ error: "Login and password are required" });
     }
 
-    const or = [{ usernameKey: login.toLowerCase() }];
-    if (login.includes("@")) {
-      or.push({ email: normalizeEmail(login) });
-    }
+    const userResult = await pool.query(
+      `SELECT id, email, username, password_hash, best_score
+       FROM users
+       WHERE username_key = $1 OR email = $2
+       LIMIT 1`,
+      [login.toLowerCase(), login.includes("@") ? normalizeEmail(login) : ""],
+    );
+    const user = userResult.rows[0];
 
-    const user = await prisma.user.findFirst({ where: { OR: or } });
-
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return res.status(401).json({ error: "Invalid login or password" });
     }
 
@@ -102,7 +126,7 @@ app.post("/api/login", async (req, res) => {
         id: user.id,
         email: user.email,
         username: user.username,
-        bestScore: user.bestScore,
+        bestScore: user.best_score,
       },
     });
   } catch (e) {
@@ -113,10 +137,18 @@ app.post("/api/login", async (req, res) => {
 
 app.get("/api/me", authMiddleware, async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: { id: true, email: true, username: true, bestScore: true },
-    });
+    const userResult = await pool.query(
+      `SELECT id, email, username, best_score
+       FROM users
+       WHERE id = $1
+       LIMIT 1`,
+      [req.userId],
+    );
+    const row = userResult.rows[0];
+    const user = row
+      ? { id: row.id, email: row.email, username: row.username, bestScore: row.best_score }
+      : null;
+
     if (!user) return res.status(404).json({ error: "User not found" });
     return res.json({ user });
   } catch (e) {
@@ -132,14 +164,18 @@ app.post("/api/score", authMiddleware, async (req, res) => {
       return res.status(400).json({ error: "Invalid score" });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    const userResult = await pool.query(
+      `SELECT id, best_score
+       FROM users
+       WHERE id = $1
+       LIMIT 1`,
+      [req.userId],
+    );
+    const user = userResult.rows[0];
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const bestScore = Math.max(user.bestScore, Math.floor(score));
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { bestScore },
-    });
+    const bestScore = Math.max(Number(user.best_score || 0), Math.floor(score));
+    await pool.query(`UPDATE users SET best_score = $1 WHERE id = $2`, [bestScore, user.id]);
 
     return res.json({ bestScore });
   } catch (e) {
@@ -150,10 +186,15 @@ app.post("/api/score", authMiddleware, async (req, res) => {
 
 app.get("/api/leaderboard", async (_req, res) => {
   try {
-    const rows = await prisma.user.findMany({
-      select: { username: true, bestScore: true },
-      orderBy: [{ bestScore: "desc" }, { username: "asc" }],
-    });
+    const result = await pool.query(
+      `SELECT username, best_score
+       FROM users
+       ORDER BY best_score DESC, username ASC`,
+    );
+    const rows = result.rows.map((row) => ({
+      username: row.username,
+      bestScore: row.best_score,
+    }));
     return res.json({ leaderboard: rows });
   } catch (e) {
     console.error(e);
