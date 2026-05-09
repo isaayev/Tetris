@@ -5,8 +5,10 @@ const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
 require("dotenv").config();
 
+const isRailway = Boolean(process.env.RAILWAY_ENVIRONMENT_NAME);
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: isRailway ? { rejectUnauthorized: false } : undefined,
 });
 const app = express();
 
