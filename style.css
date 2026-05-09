@@ -529,35 +529,68 @@ kbd {
 
 @media (height <= 860px) and (width > 860px) {
   body {
-    place-items: start center;
-    overflow-y: auto;
+    place-items: center;
+    overflow: hidden;
   }
 
   .app {
-    height: auto;
-    min-height: calc(100dvh - 16px);
+    height: calc(100dvh - 12px);
   }
 
   .game-card {
-    height: auto;
-    min-height: calc(100dvh - 16px);
-    overflow: visible;
+    height: 100%;
+    padding: 9px;
+    overflow: hidden;
   }
 
   .game-header h1 {
-    font-size: 28px;
+    font-size: 26px;
   }
 
   .game-header p {
-    margin-bottom: 10px;
+    margin: 2px 0 8px;
+    font-size: 13px;
   }
 
   .game-layout {
-    gap: 10px;
+    gap: 8px;
   }
 
   #tetris-board {
-    height: min(62dvh, 560px);
+    height: min(50dvh, 500px);
+  }
+
+  .side-panel {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .stat-box {
+    padding: 8px 10px;
+  }
+
+  .stat-box strong {
+    font-size: 19px;
+  }
+
+  #next-piece {
+    max-width: 68px;
+  }
+
+  .controls ul {
+    gap: 4px;
+  }
+
+  .controls li {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+
+  .hint {
+    margin-top: 4px;
+    min-height: 36px;
+    padding: 8px;
+    font-size: 13px;
   }
 }
 
