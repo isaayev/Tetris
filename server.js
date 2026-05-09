@@ -53,8 +53,42 @@ function uniqueFieldFromDetail(detail) {
   return match ? match[1] : "field";
 }
 
+async function ensureDatabaseSchema() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id BIGSERIAL PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      username TEXT NOT NULL UNIQUE,
+      username_key TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      best_score INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_users_best_score_username
+      ON users (best_score DESC, username ASC)
+  `);
+}
+
+let dbInitError = null;
+const dbReady = ensureDatabaseSchema().catch((error) => {
+  dbInitError = error;
+  console.error("Database initialization failed:", error.message);
+});
+
+async function requireDatabase(res) {
+  await dbReady;
+  if (dbInitError) {
+    res.status(503).json({ error: "Database is unavailable. Check DATABASE_URL." });
+    return false;
+  }
+  return true;
+}
+
 app.post("/api/register", async (req, res) => {
   try {
+    if (!(await requireDatabase(res))) return;
     const email = normalizeEmail(req.body.email);
     const username = normalizeUsername(req.body.username);
     const password = String(req.body.password || "");
@@ -101,6 +135,7 @@ app.post("/api/register", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   try {
+    if (!(await requireDatabase(res))) return;
     const login = String(req.body.login || "").trim();
     const password = String(req.body.password || "");
 
@@ -139,6 +174,7 @@ app.post("/api/login", async (req, res) => {
 
 app.get("/api/me", authMiddleware, async (req, res) => {
   try {
+    if (!(await requireDatabase(res))) return;
     const userResult = await pool.query(
       `SELECT id, email, username, best_score
        FROM users
@@ -161,6 +197,7 @@ app.get("/api/me", authMiddleware, async (req, res) => {
 
 app.post("/api/score", authMiddleware, async (req, res) => {
   try {
+    if (!(await requireDatabase(res))) return;
     const score = Number(req.body.score);
     if (!Number.isFinite(score) || score < 0 || score > 1_000_000_000) {
       return res.status(400).json({ error: "Invalid score" });
@@ -188,6 +225,7 @@ app.post("/api/score", authMiddleware, async (req, res) => {
 
 app.get("/api/leaderboard", async (_req, res) => {
   try {
+    if (!(await requireDatabase(res))) return;
     const result = await pool.query(
       `SELECT username, best_score
        FROM users
