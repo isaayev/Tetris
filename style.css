@@ -32,6 +32,18 @@ body {
   overflow: hidden;
 }
 
+.app,
+.game-card,
+.game-layout,
+.side-panel,
+.board-wrap {
+  min-width: 0;
+}
+
+.board-wrap canvas {
+  max-width: 100%;
+}
+
 .app {
   width: min(1320px, 100%);
   height: calc(100dvh - 16px);
@@ -250,6 +262,12 @@ body {
 body.auth-body {
   overflow-y: auto;
   align-content: center;
+}
+
+/* Game-only behavior (prevents mobile scroll while playing) */
+body.is-mobile:not(.auth-body) {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .auth-shell {
@@ -656,23 +674,25 @@ kbd {
 @media (width <= 860px) {
   body {
     place-items: start center;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .app {
-    height: auto;
-    min-height: calc(100dvh - 16px);
+    height: calc(100dvh - 16px);
+    min-height: 0;
   }
 
   .game-card {
     padding: 10px;
-    height: auto;
-    overflow: visible;
+    height: 100%;
+    overflow: hidden;
   }
 
   .game-layout {
     grid-template-columns: 1fr;
     gap: 8px;
+    grid-template-rows: auto 1fr auto;
+    height: 100%;
   }
 
   .side-panel {
@@ -701,11 +721,11 @@ kbd {
   }
 
   .mobile-controls {
-    display: grid;
+    display: none;
   }
 
   .mobile-pause-btn {
-    display: inline-flex;
+    display: none;
     align-items: center;
     justify-content: center;
   }
@@ -733,6 +753,18 @@ kbd {
   .stat-box strong {
     font-size: 20px;
   }
+
+  body.is-playing .mobile-controls {
+    display: grid;
+  }
+
+  body.is-playing .mobile-pause-btn {
+    display: inline-flex;
+  }
+
+  body.is-playing .game-header {
+    display: none;
+  }
 }
 
 @media (width <= 560px) {
@@ -755,7 +787,7 @@ kbd {
   }
 
   #tetris-board {
-    height: min(48dvh, 500px);
+    height: min(52dvh, 520px);
     width: auto;
   }
 
@@ -848,6 +880,83 @@ kbd {
 
   .controls li {
     padding: 6px 8px;
+    font-size: 13px;
+  }
+}
+
+/* Admin table: avoid horizontal scrolling on small screens */
+@media (width <= 860px) {
+  .admin-shell {
+    width: min(100%, 980px);
+  }
+
+  .admin-grant-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-grant-row .auth-submit {
+    width: 100%;
+  }
+
+  .admin-table-wrap {
+    overflow: hidden;
+    max-height: none;
+    border: 0;
+  }
+
+  table.admin-table {
+    display: block;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  table.admin-table thead {
+    display: none;
+  }
+
+  table.admin-table tbody {
+    display: block;
+  }
+
+  table.admin-table tr {
+    display: block;
+    background: #141a31;
+    border: 1px solid #2a3563;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  table.admin-table td {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #2a3563;
+    font-size: 14px;
+  }
+
+  table.admin-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  table.admin-table td:last-child {
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 0;
+  }
+
+  .admin-actions-cell {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+  }
+
+  .admin-btn {
+    padding: 10px 10px;
     font-size: 13px;
   }
 }

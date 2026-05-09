@@ -23,6 +23,8 @@ const ctx = boardCanvas.getContext("2d");
 const nextPieceCanvas = document.getElementById("next-piece");
 const nextCtx = nextPieceCanvas ? nextPieceCanvas.getContext("2d") : null;
 const mobilePauseBtn = document.getElementById("mobile-pause-btn");
+const mobileControls = document.querySelector(".mobile-controls");
+const gameHeader = document.querySelector(".game-header");
 const touchLeftBtn = document.getElementById("touch-left");
 const touchRotateBtn = document.getElementById("touch-rotate");
 const touchRightBtn = document.getElementById("touch-right");
@@ -89,15 +91,53 @@ const state = {
   dropCounter: 0,
 };
 
+function isMobile() {
+  return window.innerWidth <= 860;
+}
+
+function syncLayoutState() {
+  document.body.classList.toggle("is-playing", Boolean(state.started && !state.lost));
+  document.body.classList.toggle("is-mobile", isMobile());
+  if (mobileControls) {
+    mobileControls.classList.toggle("hidden", !(state.started && !state.lost));
+  }
+  if (mobilePauseBtn) {
+    const shouldShowPause = Boolean(isMobile() && state.started && !state.lost);
+    mobilePauseBtn.classList.toggle("hidden", !shouldShowPause);
+  }
+  if (gameHeader) {
+    // CSS also hides on mobile, but keep it consistent for other breakpoints too.
+    const shouldHideHeader = Boolean(isMobile() && state.started && !state.lost);
+    gameHeader.classList.toggle("hidden", shouldHideHeader);
+  }
+}
+
 function resizeCanvas() {
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
-  const isMobileWidth = viewportWidth <= 860;
+  const isMobileWidth = isMobile();
   const isShortDesktop = !isMobileWidth && viewportHeight <= 900;
-  const boardHeightRatio = isMobileWidth ? 0.56 : isShortDesktop ? 0.6 : 0.82;
-  const widthDivisor = isMobileWidth ? 14 : isShortDesktop ? 14 : 10;
-  const minBlock = isMobileWidth ? 16 : 14;
-  const availableHeight = Math.max(260, Math.floor(viewportHeight * boardHeightRatio));
+
+  syncLayoutState();
+
+  let availableHeight = viewportHeight;
+  if (isMobileWidth) {
+    // Try to fit everything inside the viewport without scrolling.
+    const headerH = gameHeader && !gameHeader.classList.contains("hidden") ? gameHeader.getBoundingClientRect().height : 0;
+    const sidePanel = document.querySelector(".side-panel");
+    const sideH = sidePanel ? sidePanel.getBoundingClientRect().height : 0;
+    const controlsH =
+      mobileControls && !mobileControls.classList.contains("hidden")
+        ? mobileControls.getBoundingClientRect().height
+        : 0;
+    availableHeight = Math.max(240, Math.floor(viewportHeight - headerH - sideH - controlsH - 48));
+  } else {
+    const boardHeightRatio = isShortDesktop ? 0.66 : 0.86;
+    availableHeight = Math.max(260, Math.floor(viewportHeight * boardHeightRatio));
+  }
+
+  const widthDivisor = isMobileWidth ? 11.5 : isShortDesktop ? 12 : 9.5;
+  const minBlock = isMobileWidth ? 18 : 16;
   const dynamicBlock = Math.max(minBlock, Math.floor(Math.min(availableHeight / ROWS, viewportWidth / widthDivisor)));
   blockSize = dynamicBlock;
 
@@ -199,6 +239,7 @@ function showStartScreen() {
   startOverlay.classList.remove("hidden");
   menuOverlay.classList.add("hidden");
   lostOverlay.classList.add("hidden");
+  syncLayoutState();
   drawBoard();
 }
 
@@ -407,6 +448,8 @@ function startGame() {
   syncStats();
   drawBoard();
   setHint("Game started. Good luck!", "ok");
+  syncLayoutState();
+  resizeCanvas();
 }
 
 function drawNextPiece() {
@@ -496,6 +539,7 @@ async function endGame() {
   }
 
   syncStats();
+  syncLayoutState();
 }
 
 function openMainMenu() {
@@ -524,6 +568,8 @@ function toggleMainMenu() {
 function goToMainMenu() {
   showStartScreen();
   setHint("Choose Start Game or Leaderboard.");
+  syncLayoutState();
+  resizeCanvas();
 }
 
 function update(time = 0) {
@@ -644,6 +690,7 @@ logoutBtn.addEventListener("click", () => {
 
 state.board = createBoard();
 void refreshAuthHighScore();
+syncLayoutState();
 resizeCanvas();
 drawBoard();
 showStartScreen();

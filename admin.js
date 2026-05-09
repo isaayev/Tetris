@@ -4,6 +4,16 @@ const adminOk = document.getElementById("admin-ok");
 const grantLoginInput = document.getElementById("grant-login");
 const grantBtn = document.getElementById("grant-btn");
 
+const ADMIN_TABLE_COLUMNS = [
+  "ID",
+  "Username",
+  "Email",
+  "Best Score",
+  "Admin",
+  "Blocked",
+  "Actions",
+];
+
 function showError(message) {
   adminError.textContent = message;
   adminError.classList.toggle("hidden", !message);
@@ -47,22 +57,24 @@ function actionButton(label, action, className = "") {
 
 function renderUsers(users) {
   if (!Array.isArray(users) || users.length === 0) {
-    usersBody.innerHTML = '<tr><td colspan="7" class="muted-cell">No users found.</td></tr>';
+    usersBody.innerHTML = `<tr><td colspan="${ADMIN_TABLE_COLUMNS.length}" class="muted-cell">No users found.</td></tr>`;
     return;
   }
 
   usersBody.innerHTML = users
     .map((user) => {
       const id = Number(user.id);
+      const adminText = user.isAdmin ? "Yes" : "No";
+      const blockedText = user.isBlocked ? "Yes" : "No";
       return `
         <tr data-user-id="${id}">
-          <td>${id}</td>
-          <td>${escapeHtml(user.username)}</td>
-          <td>${escapeHtml(user.email)}</td>
-          <td>${Number(user.bestScore || 0)}</td>
-          <td>${user.isAdmin ? "Yes" : "No"}</td>
-          <td>${user.isBlocked ? "Yes" : "No"}</td>
-          <td class="admin-actions-cell">
+          <td data-label="${ADMIN_TABLE_COLUMNS[0]}">${id}</td>
+          <td data-label="${ADMIN_TABLE_COLUMNS[1]}">${escapeHtml(user.username)}</td>
+          <td data-label="${ADMIN_TABLE_COLUMNS[2]}">${escapeHtml(user.email)}</td>
+          <td data-label="${ADMIN_TABLE_COLUMNS[3]}">${Number(user.bestScore || 0)}</td>
+          <td data-label="${ADMIN_TABLE_COLUMNS[4]}">${adminText}</td>
+          <td data-label="${ADMIN_TABLE_COLUMNS[5]}">${blockedText}</td>
+          <td data-label="${ADMIN_TABLE_COLUMNS[6]}" class="admin-actions-cell">
             ${actionButton("Edit", "edit")}
             ${actionButton(user.isBlocked ? "Unblock" : "Block", "toggle-block", user.isBlocked ? "ok" : "warn")}
             ${actionButton(user.isAdmin ? "Remove Admin" : "Make Admin", "toggle-admin")}
