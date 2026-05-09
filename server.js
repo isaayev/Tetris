@@ -50,7 +50,11 @@ function isUniqueViolation(error) {
 function uniqueFieldFromDetail(detail) {
   if (!detail) return "field";
   const match = detail.match(/\(([^)]+)\)=/);
-  return match ? match[1] : "field";
+  if (!match) return "field";
+  const rawField = match[1];
+  if (rawField === "username_key" || rawField === "username") return "username";
+  if (rawField === "email") return "email";
+  return rawField;
 }
 
 async function ensureDatabaseSchema() {

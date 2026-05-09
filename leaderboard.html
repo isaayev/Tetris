@@ -49,7 +49,11 @@
           const res = await fetch("/api/leaderboard");
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "Failed to load");
-          const rows = data.leaderboard || [];
+          const rows = (data.leaderboard || []).slice().sort((a, b) => {
+            const scoreDiff = Number(b.bestScore || 0) - Number(a.bestScore || 0);
+            if (scoreDiff !== 0) return scoreDiff;
+            return String(a.username || "").localeCompare(String(b.username || ""));
+          });
           if (rows.length === 0) {
             bodyEl.innerHTML = '<tr><td colspan="3" class="muted-cell">No scores yet. Be the first to register and play!</td></tr>';
             return;

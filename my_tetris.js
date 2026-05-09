@@ -11,13 +11,20 @@ const lostMessage = document.getElementById("lost-message");
 const startBtn = document.getElementById("start-btn");
 const restartBtn = document.getElementById("restart-btn");
 const menuResumeBtn = document.getElementById("menu-resume-btn");
-const menuStartBtn = document.getElementById("menu-start-btn");
+const menuMainBtn = document.getElementById("menu-main-btn");
+const lostMainMenuBtn = document.getElementById("lost-main-menu-btn");
 const guestAuthLinks = document.getElementById("guest-auth-links");
 const userAuthInfo = document.getElementById("user-auth-info");
 const sidebarUsername = document.getElementById("sidebar-username");
 const logoutBtn = document.getElementById("logout-btn");
 const boardCanvas = document.getElementById("tetris-board");
 const ctx = boardCanvas.getContext("2d");
+const touchLeftBtn = document.getElementById("touch-left");
+const touchRotateBtn = document.getElementById("touch-rotate");
+const touchRightBtn = document.getElementById("touch-right");
+const touchSoftBtn = document.getElementById("touch-soft");
+const touchHardBtn = document.getElementById("touch-hard");
+const touchMenuBtn = document.getElementById("touch-menu");
 
 const HIGH_SCORE_KEY = "tetris_high_score";
 
@@ -143,9 +150,13 @@ function setHint(text, type = "") {
 }
 
 function showStartScreen() {
+  state.started = false;
+  state.paused = false;
+  state.lost = false;
   startOverlay.classList.remove("hidden");
   menuOverlay.classList.add("hidden");
   lostOverlay.classList.add("hidden");
+  drawBoard();
 }
 
 function randomPiece() {
@@ -424,6 +435,11 @@ function toggleMainMenu() {
   }
 }
 
+function goToMainMenu() {
+  showStartScreen();
+  setHint("Choose Start Game or Leaderboard.");
+}
+
 function update(time = 0) {
   const delta = time - state.lastTime;
   state.lastTime = time;
@@ -494,13 +510,38 @@ function registerKeyboard() {
   });
 }
 
+function runTouchAction(action) {
+  if (!state.started || state.paused || state.lost || !state.activePiece) return;
+  action();
+  syncStats();
+  drawBoard();
+}
+
+function bindTouchButton(button, action) {
+  if (!button) return;
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    action();
+  });
+}
+
+function registerTouchControls() {
+  bindTouchButton(touchLeftBtn, () => runTouchAction(() => moveHorizontal(-1)));
+  bindTouchButton(touchRotateBtn, () => runTouchAction(rotateActivePiece));
+  bindTouchButton(touchRightBtn, () => runTouchAction(() => moveHorizontal(1)));
+  bindTouchButton(touchSoftBtn, () => runTouchAction(softDrop));
+  bindTouchButton(touchHardBtn, () => runTouchAction(hardDrop));
+  bindTouchButton(touchMenuBtn, toggleMainMenu);
+}
+
 startBtn.addEventListener("click", startGame);
 restartBtn.addEventListener("click", startGame);
 menuResumeBtn.addEventListener("click", () => {
   if (!state.started || state.lost || !state.paused) return;
   closeMainMenu();
 });
-menuStartBtn.addEventListener("click", startGame);
+menuMainBtn.addEventListener("click", goToMainMenu);
+lostMainMenuBtn.addEventListener("click", goToMainMenu);
 logoutBtn.addEventListener("click", () => {
   clearAuthSession();
   clearRememberedCredentials();
@@ -513,4 +554,5 @@ void refreshAuthHighScore();
 drawBoard();
 showStartScreen();
 registerKeyboard();
+registerTouchControls();
 requestAnimationFrame(update);

@@ -31,18 +31,33 @@
               <h2>Main Menu</h2>
               <p>Your game is paused.</p>
               <div class="overlay-actions menu-overlay-actions">
-                <button type="button" id="menu-resume-btn">Resume</button>
-                <a class="overlay-secondary-link" href="leaderboard.html">Leaderboard</a>
-                <button type="button" id="menu-start-btn" class="secondary">Start Game</button>
+                <button type="button" id="menu-resume-btn">Return Game</button>
+                <button type="button" id="menu-main-btn" class="secondary">Main Menu</button>
               </div>
             </div>
 
             <div class="overlay hidden" id="lost-overlay">
               <h2>You Lost</h2>
               <p id="lost-message"></p>
-              <button id="restart-btn">Restart Game</button>
+              <div class="overlay-actions">
+                <button id="restart-btn">Restart Game</button>
+                <button type="button" id="lost-main-menu-btn" class="secondary">Main Menu</button>
+              </div>
             </div>
           </div>
+
+          <section class="mobile-controls" aria-label="Mobile controls">
+            <div class="mobile-controls-row">
+              <button type="button" id="touch-left">Left</button>
+              <button type="button" id="touch-rotate">Rotate</button>
+              <button type="button" id="touch-right">Right</button>
+            </div>
+            <div class="mobile-controls-row">
+              <button type="button" id="touch-soft">Soft Drop</button>
+              <button type="button" id="touch-hard">Hard Drop</button>
+              <button type="button" id="touch-menu">Menu</button>
+            </div>
+          </section>
 
           <aside class="side-panel">
             <div class="user-strip" id="user-strip">

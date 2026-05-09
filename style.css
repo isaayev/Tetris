@@ -79,6 +79,33 @@ body {
   min-height: 0;
 }
 
+.mobile-controls {
+  display: none;
+  gap: 8px;
+}
+
+.mobile-controls-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mobile-controls button {
+  border: 1px solid #4a5a99;
+  border-radius: 10px;
+  background: #1c264b;
+  color: var(--text);
+  font-weight: 700;
+  padding: 12px 10px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.mobile-controls button:active {
+  transform: translateY(1px);
+  filter: brightness(1.08);
+}
+
 #tetris-board {
   display: block;
   width: auto;
@@ -491,6 +518,14 @@ kbd {
     width: auto;
   }
 
+  .controls {
+    display: none;
+  }
+
+  .mobile-controls {
+    display: grid;
+  }
+
   .side-panel {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
@@ -529,6 +564,11 @@ kbd {
   #tetris-board {
     height: min(45dvh, 430px);
     width: auto;
+  }
+
+  .mobile-controls button {
+    font-size: 13px;
+    padding: 10px 8px;
   }
 
   .overlay h2 {
