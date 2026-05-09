@@ -527,6 +527,40 @@ kbd {
   color: #ffc8d4;
 }
 
+@media (height <= 860px) and (width > 860px) {
+  body {
+    place-items: start center;
+    overflow-y: auto;
+  }
+
+  .app {
+    height: auto;
+    min-height: calc(100dvh - 16px);
+  }
+
+  .game-card {
+    height: auto;
+    min-height: calc(100dvh - 16px);
+    overflow: visible;
+  }
+
+  .game-header h1 {
+    font-size: 28px;
+  }
+
+  .game-header p {
+    margin-bottom: 10px;
+  }
+
+  .game-layout {
+    gap: 10px;
+  }
+
+  #tetris-board {
+    height: min(62dvh, 560px);
+  }
+}
+
 @media (width <= 860px) {
   body {
     place-items: start center;
