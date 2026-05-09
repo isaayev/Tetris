@@ -19,6 +19,9 @@ const sidebarUsername = document.getElementById("sidebar-username");
 const logoutBtn = document.getElementById("logout-btn");
 const boardCanvas = document.getElementById("tetris-board");
 const ctx = boardCanvas.getContext("2d");
+const nextPieceCanvas = document.getElementById("next-piece");
+const nextCtx = nextPieceCanvas ? nextPieceCanvas.getContext("2d") : null;
+const mobilePauseBtn = document.getElementById("mobile-pause-btn");
 const touchLeftBtn = document.getElementById("touch-left");
 const touchRotateBtn = document.getElementById("touch-rotate");
 const touchRightBtn = document.getElementById("touch-right");
@@ -30,7 +33,7 @@ const HIGH_SCORE_KEY = "tetris_high_score";
 
 const COLS = 10;
 const ROWS = 20;
-const BLOCK = boardCanvas.width / COLS;
+let blockSize = 30;
 
 const SHAPES = {
   I: [[1, 1, 1, 1]],
@@ -80,9 +83,40 @@ const state = {
   highScore: Number(localStorage.getItem(HIGH_SCORE_KEY) || 0),
   board: [],
   activePiece: null,
+  nextPiece: null,
   lastTime: 0,
   dropCounter: 0,
 };
+
+function resizeCanvas() {
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+  const availableHeight = Math.max(300, Math.floor(viewportHeight * (viewportWidth <= 860 ? 0.56 : 0.72)));
+  const dynamicBlock = Math.max(16, Math.floor(Math.min(availableHeight / ROWS, viewportWidth / 14)));
+  blockSize = dynamicBlock;
+
+  const cssWidth = COLS * blockSize;
+  const cssHeight = ROWS * blockSize;
+  const dpr = window.devicePixelRatio || 1;
+
+  boardCanvas.style.width = `${cssWidth}px`;
+  boardCanvas.style.height = `${cssHeight}px`;
+  boardCanvas.width = Math.floor(cssWidth * dpr);
+  boardCanvas.height = Math.floor(cssHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  if (nextPieceCanvas && nextCtx) {
+    const previewSize = Math.max(56, Math.floor(blockSize * 3.2));
+    nextPieceCanvas.style.width = `${previewSize}px`;
+    nextPieceCanvas.style.height = `${previewSize}px`;
+    nextPieceCanvas.width = Math.floor(previewSize * dpr);
+    nextPieceCanvas.height = Math.floor(previewSize * dpr);
+    nextCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  drawBoard();
+  drawNextPiece();
+}
 
 function createBoard() {
   return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -237,7 +271,14 @@ function dropInterval() {
 }
 
 function spawnPiece() {
-  state.activePiece = randomPiece();
+  if (!state.nextPiece) {
+    state.nextPiece = randomPiece();
+  }
+  state.activePiece = state.nextPiece;
+  state.activePiece.x = Math.floor(COLS / 2) - Math.ceil(state.activePiece.matrix[0].length / 2);
+  state.activePiece.y = 0;
+  state.nextPiece = randomPiece();
+  drawNextPiece();
   if (collides(state.activePiece)) {
     void endGame();
   }
@@ -303,10 +344,13 @@ function rotateActivePiece() {
 }
 
 function drawCell(x, y, color) {
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
   ctx.fillStyle = color;
-  ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+  ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+  ctx.shadowBlur = 0;
   ctx.strokeStyle = "rgba(0,0,0,0.25)";
-  ctx.strokeRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+  ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
 }
 
 function drawBoard() {
@@ -342,6 +386,7 @@ function startGame() {
   state.score = 0;
   state.lines = 0;
   state.board = createBoard();
+  state.nextPiece = randomPiece();
   state.lastTime = performance.now();
   state.dropCounter = 0;
 
@@ -353,6 +398,38 @@ function startGame() {
   syncStats();
   drawBoard();
   setHint("Game started. Good luck!", "ok");
+}
+
+function drawNextPiece() {
+  if (!nextPieceCanvas || !nextCtx) return;
+  const size = nextPieceCanvas.clientWidth || 96;
+  nextCtx.clearRect(0, 0, size, size);
+  nextCtx.fillStyle = "#0b1020";
+  nextCtx.fillRect(0, 0, size, size);
+  if (!state.nextPiece) return;
+
+  const matrix = state.nextPiece.matrix;
+  const cells = Math.max(matrix.length, matrix[0].length);
+  const cellSize = Math.floor(size / (cells + 1));
+  const offsetX = Math.floor((size - matrix[0].length * cellSize) / 2);
+  const offsetY = Math.floor((size - matrix.length * cellSize) / 2);
+  const color = COLORS[state.nextPiece.type];
+
+  nextCtx.shadowColor = color;
+  nextCtx.shadowBlur = 5;
+  for (let y = 0; y < matrix.length; y += 1) {
+    for (let x = 0; x < matrix[y].length; x += 1) {
+      if (!matrix[y][x]) continue;
+      nextCtx.fillStyle = color;
+      nextCtx.fillRect(offsetX + x * cellSize, offsetY + y * cellSize, cellSize, cellSize);
+      nextCtx.shadowBlur = 0;
+      nextCtx.strokeStyle = "rgba(0,0,0,0.22)";
+      nextCtx.strokeRect(offsetX + x * cellSize, offsetY + y * cellSize, cellSize, cellSize);
+      nextCtx.shadowColor = color;
+      nextCtx.shadowBlur = 5;
+    }
+  }
+  nextCtx.shadowBlur = 0;
 }
 
 async function endGame() {
@@ -480,39 +557,32 @@ function registerKeyboard() {
 
     if (!state.started || state.paused || state.lost || !state.activePiece) return;
 
-    switch (key) {
-      case "ArrowUp":
-        event.preventDefault();
-        rotateActivePiece();
-        break;
-      case "ArrowLeft":
-        event.preventDefault();
-        moveHorizontal(-1);
-        break;
-      case "ArrowRight":
-        event.preventDefault();
-        moveHorizontal(1);
-        break;
-      case "ArrowDown":
-        event.preventDefault();
-        softDrop();
-        break;
-      case " ":
-        event.preventDefault();
-        hardDrop();
-        break;
-      default:
-        break;
-    }
-
-    syncStats();
-    drawBoard();
+    executeMappedInput(key);
+    event.preventDefault();
   });
 }
 
-function runTouchAction(action) {
+function executeMappedInput(mappedKey) {
   if (!state.started || state.paused || state.lost || !state.activePiece) return;
-  action();
+  switch (mappedKey) {
+    case "ArrowUp":
+      rotateActivePiece();
+      break;
+    case "ArrowLeft":
+      moveHorizontal(-1);
+      break;
+    case "ArrowRight":
+      moveHorizontal(1);
+      break;
+    case "ArrowDown":
+      softDrop();
+      break;
+    case " ":
+      hardDrop();
+      break;
+    default:
+      return;
+  }
   syncStats();
   drawBoard();
 }
@@ -526,12 +596,26 @@ function bindTouchButton(button, action) {
 }
 
 function registerTouchControls() {
-  bindTouchButton(touchLeftBtn, () => runTouchAction(() => moveHorizontal(-1)));
-  bindTouchButton(touchRotateBtn, () => runTouchAction(rotateActivePiece));
-  bindTouchButton(touchRightBtn, () => runTouchAction(() => moveHorizontal(1)));
-  bindTouchButton(touchSoftBtn, () => runTouchAction(softDrop));
-  bindTouchButton(touchHardBtn, () => runTouchAction(hardDrop));
+  const touchToKey = {
+    left: "ArrowLeft",
+    rotate: "ArrowUp",
+    right: "ArrowRight",
+    soft: "ArrowDown",
+    hard: " ",
+  };
+  bindTouchButton(touchLeftBtn, () => executeMappedInput(touchToKey.left));
+  bindTouchButton(touchRotateBtn, () => executeMappedInput(touchToKey.rotate));
+  bindTouchButton(touchRightBtn, () => executeMappedInput(touchToKey.right));
+  bindTouchButton(touchSoftBtn, () => executeMappedInput(touchToKey.soft));
+  bindTouchButton(touchHardBtn, () => executeMappedInput(touchToKey.hard));
   bindTouchButton(touchMenuBtn, toggleMainMenu);
+
+  [touchLeftBtn, touchRotateBtn, touchRightBtn, touchSoftBtn, touchHardBtn, touchMenuBtn].forEach(
+    (btn) => {
+      if (!btn) return;
+      btn.addEventListener("touchstart", (event) => event.preventDefault(), { passive: false });
+    },
+  );
 }
 
 startBtn.addEventListener("click", startGame);
@@ -551,8 +635,16 @@ logoutBtn.addEventListener("click", () => {
 
 state.board = createBoard();
 void refreshAuthHighScore();
+resizeCanvas();
 drawBoard();
 showStartScreen();
 registerKeyboard();
 registerTouchControls();
+window.addEventListener("resize", resizeCanvas);
+if (mobilePauseBtn) {
+  mobilePauseBtn.addEventListener("click", (event) => {
+    event.preventDefault();
+    toggleMainMenu();
+  });
+}
 requestAnimationFrame(update);

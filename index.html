@@ -16,6 +16,9 @@
 
         <div class="game-layout">
           <div class="board-wrap">
+            <button type="button" id="mobile-pause-btn" class="mobile-pause-btn" aria-label="Pause menu">
+              Pause
+            </button>
             <canvas id="tetris-board" width="300" height="600" aria-label="Tetris board"></canvas>
 
             <div class="overlay active" id="start-overlay">
@@ -79,6 +82,10 @@
             <div class="stat-box">
               <span>Lines</span>
               <strong id="line-value">0</strong>
+            </div>
+            <div class="stat-box next-piece-box">
+              <span>Next Piece</span>
+              <canvas id="next-piece" width="96" height="96" aria-label="Next piece preview"></canvas>
             </div>
 
             <section class="controls">
