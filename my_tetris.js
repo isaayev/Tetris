@@ -644,9 +644,41 @@ function executeMappedInput(mappedKey) {
 
 function bindTouchButton(button, action) {
   if (!button) return;
-  button.addEventListener("click", (event) => {
+  let skipClick = false;
+
+  const run = () => action();
+
+  button.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
     event.preventDefault();
-    action();
+    button.setPointerCapture(event.pointerId);
+    button.classList.add("is-pressed");
+  });
+
+  button.addEventListener("pointerup", (event) => {
+    if (!button.hasPointerCapture(event.pointerId)) return;
+    button.releasePointerCapture(event.pointerId);
+    button.classList.remove("is-pressed");
+    event.preventDefault();
+    skipClick = true;
+    run();
+  });
+
+  button.addEventListener("pointercancel", (event) => {
+    button.classList.remove("is-pressed");
+    if (button.hasPointerCapture(event.pointerId)) {
+      button.releasePointerCapture(event.pointerId);
+    }
+  });
+
+  button.addEventListener("click", (event) => {
+    if (skipClick) {
+      event.preventDefault();
+      skipClick = false;
+      return;
+    }
+    event.preventDefault();
+    run();
   });
 }
 
@@ -664,13 +696,6 @@ function registerTouchControls() {
   bindTouchButton(touchSoftBtn, () => executeMappedInput(touchToKey.soft));
   bindTouchButton(touchHardBtn, () => executeMappedInput(touchToKey.hard));
   bindTouchButton(touchMenuBtn, toggleMainMenu);
-
-  [touchLeftBtn, touchRotateBtn, touchRightBtn, touchSoftBtn, touchHardBtn, touchMenuBtn].forEach(
-    (btn) => {
-      if (!btn) return;
-      btn.addEventListener("touchstart", (event) => event.preventDefault(), { passive: false });
-    },
-  );
 }
 
 startBtn.addEventListener("click", startGame);
@@ -698,9 +723,6 @@ registerKeyboard();
 registerTouchControls();
 window.addEventListener("resize", resizeCanvas);
 if (mobilePauseBtn) {
-  mobilePauseBtn.addEventListener("click", (event) => {
-    event.preventDefault();
-    toggleMainMenu();
-  });
+  bindTouchButton(mobilePauseBtn, toggleMainMenu);
 }
 requestAnimationFrame(update);
