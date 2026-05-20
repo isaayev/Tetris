@@ -25,13 +25,6 @@ const nextCtx = nextPieceCanvas ? nextPieceCanvas.getContext("2d") : null;
 const mobilePauseBtn = document.getElementById("mobile-pause-btn");
 const mobileControls = document.querySelector(".mobile-controls");
 const gameHeader = document.querySelector(".game-header");
-const touchLeftBtn = document.getElementById("touch-left");
-const touchRotateBtn = document.getElementById("touch-rotate");
-const touchRightBtn = document.getElementById("touch-right");
-const touchSoftBtn = document.getElementById("touch-soft");
-const touchHardBtn = document.getElementById("touch-hard");
-const touchMenuBtn = document.getElementById("touch-menu");
-
 const HIGH_SCORE_KEY = "tetris_high_score";
 
 const COLS = 10;
@@ -642,60 +635,103 @@ function executeMappedInput(mappedKey) {
   drawBoard();
 }
 
-function bindTouchButton(button, action) {
+const MOBILE_CONTROL_ACTIONS = {
+  "touch-left": () => executeMappedInput("ArrowLeft"),
+  "touch-rotate": () => executeMappedInput("ArrowUp"),
+  "touch-right": () => executeMappedInput("ArrowRight"),
+  "touch-soft": () => executeMappedInput("ArrowDown"),
+  "touch-hard": () => executeMappedInput(" "),
+  "touch-menu": () => toggleMainMenu(),
+};
+
+function getMobileControlButton(target) {
+  if (!mobileControls || !target?.closest) return null;
+  const button = target.closest("button");
+  if (!button || !mobileControls.contains(button)) return null;
+  if (!MOBILE_CONTROL_ACTIONS[button.id]) return null;
+  return button;
+}
+
+function clearPressedMobileButtons() {
+  if (!mobileControls) return;
+  mobileControls.querySelectorAll(".is-pressed").forEach((button) => {
+    button.classList.remove("is-pressed");
+  });
+}
+
+function bindMobileTapButton(button, action) {
   if (!button) return;
-  let skipClick = false;
+  let suppressClickUntil = 0;
 
-  const run = () => action();
-
-  button.addEventListener("pointerdown", (event) => {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
+  const run = (event) => {
     event.preventDefault();
-    button.setPointerCapture(event.pointerId);
-    button.classList.add("is-pressed");
-  });
+    event.stopPropagation();
+    action();
+  };
 
-  button.addEventListener("pointerup", (event) => {
-    if (!button.hasPointerCapture(event.pointerId)) return;
-    button.releasePointerCapture(event.pointerId);
-    button.classList.remove("is-pressed");
-    event.preventDefault();
-    skipClick = true;
-    run();
-  });
+  button.addEventListener(
+    "touchstart",
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      button.classList.add("is-pressed");
+      suppressClickUntil = Date.now() + 500;
+      action();
+    },
+    { passive: false },
+  );
 
-  button.addEventListener("pointercancel", (event) => {
-    button.classList.remove("is-pressed");
-    if (button.hasPointerCapture(event.pointerId)) {
-      button.releasePointerCapture(event.pointerId);
-    }
-  });
+  const release = () => button.classList.remove("is-pressed");
+  button.addEventListener("touchend", release, { passive: true });
+  button.addEventListener("touchcancel", release, { passive: true });
 
   button.addEventListener("click", (event) => {
-    if (skipClick) {
+    if (Date.now() < suppressClickUntil) {
       event.preventDefault();
-      skipClick = false;
       return;
     }
-    event.preventDefault();
-    run();
+    run(event);
   });
 }
 
 function registerTouchControls() {
-  const touchToKey = {
-    left: "ArrowLeft",
-    rotate: "ArrowUp",
-    right: "ArrowRight",
-    soft: "ArrowDown",
-    hard: " ",
+  if (!mobileControls) return;
+
+  let suppressClickUntil = 0;
+
+  const runControl = (button) => {
+    const action = MOBILE_CONTROL_ACTIONS[button.id];
+    if (action) action();
   };
-  bindTouchButton(touchLeftBtn, () => executeMappedInput(touchToKey.left));
-  bindTouchButton(touchRotateBtn, () => executeMappedInput(touchToKey.rotate));
-  bindTouchButton(touchRightBtn, () => executeMappedInput(touchToKey.right));
-  bindTouchButton(touchSoftBtn, () => executeMappedInput(touchToKey.soft));
-  bindTouchButton(touchHardBtn, () => executeMappedInput(touchToKey.hard));
-  bindTouchButton(touchMenuBtn, toggleMainMenu);
+
+  mobileControls.addEventListener(
+    "touchstart",
+    (event) => {
+      const button = getMobileControlButton(event.target);
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      button.classList.add("is-pressed");
+      suppressClickUntil = Date.now() + 500;
+      runControl(button);
+    },
+    { passive: false },
+  );
+
+  mobileControls.addEventListener("touchend", clearPressedMobileButtons, { passive: true });
+  mobileControls.addEventListener("touchcancel", clearPressedMobileButtons, { passive: true });
+
+  mobileControls.addEventListener("click", (event) => {
+    const button = getMobileControlButton(event.target);
+    if (!button) return;
+    if (Date.now() < suppressClickUntil) {
+      event.preventDefault();
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    runControl(button);
+  });
 }
 
 startBtn.addEventListener("click", startGame);
@@ -723,6 +759,6 @@ registerKeyboard();
 registerTouchControls();
 window.addEventListener("resize", resizeCanvas);
 if (mobilePauseBtn) {
-  bindTouchButton(mobilePauseBtn, toggleMainMenu);
+  bindMobileTapButton(mobilePauseBtn, toggleMainMenu);
 }
 requestAnimationFrame(update);

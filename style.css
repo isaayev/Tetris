@@ -115,7 +115,11 @@ body {
   display: none;
   gap: 8px;
   position: relative;
-  z-index: 10;
+  z-index: 20;
+  flex-shrink: 0;
+  grid-column: 1 / -1;
+  pointer-events: auto;
+  isolation: isolate;
 }
 
 .mobile-controls-row {
@@ -124,22 +128,26 @@ body {
   gap: 8px;
 }
 
-.mobile-controls button {
+.mobile-controls button,
+.mobile-controls .mobile-ctrl {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  min-width: 0;
   border: 1px solid #4a5a99;
   border-radius: 10px;
   background: #1c264b;
   color: var(--text);
+  font: inherit;
   font-weight: 700;
   padding: 12px 10px;
-  min-height: 48px;
+  min-height: 52px;
   touch-action: manipulation;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
 .mobile-controls button.is-pressed,
@@ -148,14 +156,24 @@ body {
   filter: brightness(1.08);
 }
 
-.mobile-btn-glyph {
-  font-size: 1.65rem;
-  line-height: 1;
+.mobile-btn-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
   pointer-events: none;
 }
 
-#touch-rotate {
-  font-size: 1.45rem;
+.mobile-btn-icon-menu {
+  width: 26px;
+  height: 26px;
+}
+
+.mobile-ctrl-label {
+  pointer-events: none;
+}
+
+.mobile-ctrl-arrow {
+  padding: 10px;
 }
 
 #tetris-board {
@@ -171,6 +189,7 @@ body {
     #0b1020;
   background-size: 30px 30px;
   touch-action: none;
+  pointer-events: none;
 }
 
 #next-piece {
@@ -778,7 +797,7 @@ kbd {
     font-size: 20px;
   }
 
-  body.is-playing .mobile-controls {
+  body.is-playing .mobile-controls:not(.hidden) {
     display: grid;
   }
 

@@ -51,20 +51,34 @@
 
           <section class="mobile-controls" aria-label="Mobile controls">
             <div class="mobile-controls-row">
-              <button type="button" id="touch-left" aria-label="Move left">
-                <span class="mobile-btn-glyph" aria-hidden="true">←</span>
+              <button type="button" class="mobile-ctrl mobile-ctrl-arrow" id="touch-left" aria-label="Move left">
+                <svg class="mobile-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
               </button>
-              <button type="button" id="touch-rotate" aria-label="Rotate piece">↻</button>
-              <button type="button" id="touch-right" aria-label="Move right">
-                <span class="mobile-btn-glyph" aria-hidden="true">→</span>
+              <button type="button" class="mobile-ctrl mobile-ctrl-action" id="touch-rotate" aria-label="Rotate piece">
+                <span class="mobile-ctrl-label">Rotate</span>
+              </button>
+              <button type="button" class="mobile-ctrl mobile-ctrl-arrow" id="touch-right" aria-label="Move right">
+                <svg class="mobile-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
               </button>
             </div>
             <div class="mobile-controls-row">
-              <button type="button" id="touch-soft" aria-label="Soft drop">
-                <span class="mobile-btn-glyph" aria-hidden="true">↓</span>
+              <button type="button" class="mobile-ctrl mobile-ctrl-arrow" id="touch-soft" aria-label="Soft drop">
+                <svg class="mobile-btn-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
               </button>
-              <button type="button" id="touch-hard" aria-label="Hard drop">Drop</button>
-              <button type="button" id="touch-menu" aria-label="Main menu">☰</button>
+              <button type="button" class="mobile-ctrl mobile-ctrl-action" id="touch-hard" aria-label="Hard drop">
+                <span class="mobile-ctrl-label">Drop</span>
+              </button>
+              <button type="button" class="mobile-ctrl mobile-ctrl-action" id="touch-menu" aria-label="Main menu">
+                <svg class="mobile-btn-icon mobile-btn-icon-menu" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                </svg>
+              </button>
             </div>
           </section>
 
